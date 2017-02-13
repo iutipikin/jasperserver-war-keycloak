@@ -3,9 +3,9 @@ JasperReports® Server 6.2.0 integration with Keycloak 1.9.1.Final via Spring Se
 
 ### Changes
 
-[x] Multi Tenancy
-[ ] SAML
-[ ] Single Sign Out
+- [x] Multi Tenancy
+- [ ] SAML
+- [ ] Single Sign Out
 
 ### Information
 
