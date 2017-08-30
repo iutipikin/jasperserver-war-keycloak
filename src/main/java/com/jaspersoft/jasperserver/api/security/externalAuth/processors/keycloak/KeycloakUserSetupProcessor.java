@@ -3,10 +3,15 @@
  */
 package com.jaspersoft.jasperserver.api.security.externalAuth.processors.keycloak;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
+import com.jaspersoft.jasperserver.api.JSException;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
+import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.client.MetadataUserDetails;
+import com.jaspersoft.jasperserver.api.metadata.user.service.impl.UserAuthorityServiceImpl;
+import com.jaspersoft.jasperserver.api.security.externalAuth.keycloak.KeycloakUserDetails;
+import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserSetupProcessor;
+import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData;
+import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.keycloak.adapters.springsecurity.KeycloakAuthenticationException;
@@ -18,13 +23,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.jaspersoft.jasperserver.api.JSException;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.Role;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.User;
-import com.jaspersoft.jasperserver.api.metadata.user.domain.impl.client.MetadataUserDetails;
-import com.jaspersoft.jasperserver.api.security.externalAuth.keycloak.KeycloakUserDetails;
-import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ExternalUserSetupProcessor;
-import com.jaspersoft.jasperserver.api.security.externalAuth.processors.ProcessorData;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Keycloak user setup processor.
@@ -52,12 +53,14 @@ public class KeycloakUserSetupProcessor extends ExternalUserSetupProcessor {
 			final UserDetails externalUserDetails = (UserDetails) ProcessorData.getInstance()
 					.getData(ProcessorData.Key.EXTERNAL_AUTH_DETAILS);
 			if (externalUserDetails instanceof KeycloakUserDetails) {
+				logger.log(Level.INFO, String.format("Authentication with Keycloak objects: %s", ((KeycloakUserDetails) externalUserDetails).getFullName()));
 				final KeycloakUserDetails principal = (KeycloakUserDetails) externalUserDetails;
 				principal.setRoles(userDetails.getRoles());
 				authentication = new KeycloakAuthenticationToken(new SimpleKeycloakAccount(principal,
 						Collections.<String> emptySet(), principal.getKeycloakSecurityContext()),
 						userDetails.getAuthorities());
 			} else {
+				logger.log(Level.INFO, String.format("Authentication with default JR objects: %s", userDetails.getFullName()));
 				authentication = new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(),
 						userDetails.getAuthorities());
 			}

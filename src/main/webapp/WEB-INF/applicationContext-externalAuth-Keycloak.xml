@@ -113,7 +113,9 @@
 	</bean>
 
 	<bean id="keycloakAuthenticationEntryPoint"
-		class="org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint" />
+		class="org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationEntryPoint" >
+		<constructor-arg type="org.keycloak.adapters.AdapterDeploymentContext" ref="adapterDeploymentContext"/>
+	</bean>
 
 	<bean id="logoutFilter" name="casSingleSignOutFilter"
 		class="org.springframework.security.web.authentication.logout.LogoutFilter">
@@ -150,7 +152,7 @@
 		<constructor-arg name="keycloakConfigFileResources">
 			<map>
 				<entry key="master" value="/WEB-INF/master.json" />
-				<entry key="slave" value="/WEB-INF/slave.json" />
+				<!--<entry key="slave" value="/WEB-INF/slave.json" />-->
 			</map>
 		</constructor-arg>
 	</bean>

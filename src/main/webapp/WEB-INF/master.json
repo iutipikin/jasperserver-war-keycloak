@@ -1,10 +1,10 @@
 {
-	"realm" : "master",
-	"resource" : "jasperserver",
-	"realm-public-key" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA8sLOyF8SQVn5N0/I3lQW9QARFVLNWLeoUDxDtQo+QShwTxcxBqEac96G5lxzMJ9m5Wl9wlMjAtiHtpMo3v7v195tg8rj4oD2cXtIphhOW6VEHowIhdHf7NzTtbORbmZwX+MxSlARswY1pmETLhUMexvImJY+ViUpOk6UMNsMxGlip+LREzAciKAAT4dirYt6/we16hT6mHl5CjxyXd8GRqZAhP/5KxW1di2f6wyyJ+i+1ONfubBM2LZmAK4GQURj6rzA/wy1dQPSRzgwn0h+2B6VU5AX35bP12XwiEnkyyI6imx7E9abHy2kBFAeGZTuIS6zUHntI/ksU/29O7s7xQIDAQAB",
-	"auth-server-url" : "http://localhost:8090/auth",
-	"ssl-required" : "none",
-	"use-resource-role-mappings" : false,
+	"realm" : "ias",
+	"resource" : "ias-web-app",
+	"realm-public-key" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlvDgKX8rsrgFxsZbuXL+qWAUvvnErHRZmb2y97O+udBeoUTeRC6DkAUNSEmfHUodWIGgkHiepaEgBPkHl9Liz610JsBr/8Tee45DQNqmCI54erUnPNkpwOMPyY0DxTbOymTskpgDJA75eetWQmNbtPKb/JL3fdo0lbUCdNB/+SGrCZya2W9kB+5jKGxl2UyFkaSewvJISIjE0Re+7oHmSsIpSikfPjzKlCVPS+SOO7TKNyjV+r6n3KL9bSHaWvFxmMI2qdVLfvDSqYjzOK/a5G5DDyWDbvihpmYOwPlwxHKovTfFrQrqOzajGtEIRTgSQSMDGtsrQDgxlAqZmrzF9QIDAQAB",
+	"auth-server-url" : "",
+	"ssl-required" : "external",
+	"use-resource-role-mappings" : true,
 	"enable-cors" : true,
 	"cors-max-age" : 1000,
 	"cors-allowed-methods" : "POST, PUT, DELETE, GET",
@@ -12,9 +12,9 @@
 	"enable-basic-auth" : false,
 	"expose-token" : true,
 	"credentials" : {
-		"secret" : "8fe713d2-9ddc-417d-b2a8-c2591647b25a"
+		"secret" : "cbdb5280-de09-4448-b733-f29840de2470"
 	},
-	"connection-pool-size" : 20,
+	"connection-pool-size" : 50,
 	"disable-trust-manager" : false,
 	"allow-any-hostname" : false
 }
