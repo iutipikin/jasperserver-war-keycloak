@@ -2,7 +2,7 @@
 	"realm" : "ias",
 	"resource" : "ias-web-app",
 	"realm-public-key" : "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlvDgKX8rsrgFxsZbuXL+qWAUvvnErHRZmb2y97O+udBeoUTeRC6DkAUNSEmfHUodWIGgkHiepaEgBPkHl9Liz610JsBr/8Tee45DQNqmCI54erUnPNkpwOMPyY0DxTbOymTskpgDJA75eetWQmNbtPKb/JL3fdo0lbUCdNB/+SGrCZya2W9kB+5jKGxl2UyFkaSewvJISIjE0Re+7oHmSsIpSikfPjzKlCVPS+SOO7TKNyjV+r6n3KL9bSHaWvFxmMI2qdVLfvDSqYjzOK/a5G5DDyWDbvihpmYOwPlwxHKovTfFrQrqOzajGtEIRTgSQSMDGtsrQDgxlAqZmrzF9QIDAQAB",
-	"auth-server-url" : "",
+	"auth-server-url" : "http://81.222.254.100:4005/auth",
 	"ssl-required" : "external",
 	"use-resource-role-mappings" : true,
 	"enable-cors" : true,

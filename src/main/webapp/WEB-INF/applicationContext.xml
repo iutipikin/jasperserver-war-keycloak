@@ -43,7 +43,21 @@
         <value>/public</value>
     </util:list>
 
+    <util:list id="restrictedFolderNames">
+        <value>/public</value>
+    </util:list>
+
+    <util:list id="restrictedFoldersForCreation">
+        <value></value>
+        <value>/</value>
+        <value>org_template</value>
+        <value>organizations</value>
+    </util:list>
+
     <!-- Hibernate SessionFactory -->
+    <!-- Hibernate SessionFactory
+    If internal ActiveMQ server is used then you must add dependency 'depends-on="broker-1"' for sessionFactory or it will fail to start
+    -->
     <bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
         <property name="dataSource" ref="dataSource"/>
         <property name="mappingResources">
@@ -62,6 +76,7 @@
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoJndiJdbcDataSource.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoVirtualDataSource.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoAwsDataSource.hbm.xml</value>
+                <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoAzureSqlDataSource.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoListOfValues.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoOlapClientConnection.hbm.xml</value>
                 <value>/com/jaspersoft/jasperserver/api/metadata/common/service/impl/hibernate/persistent/RepoOlapUnit.hbm.xml</value>
@@ -241,6 +256,8 @@
                     value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.client.JdbcReportDataSourceImpl"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AwsReportDataSource"
                        value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.client.AwsReportDataSourceImpl"/>
+                <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AzureSqlReportDataSource"
+                       value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.client.AzureSqlReportDataSourceImpl"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JndiJdbcReportDataSource"
                     value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.client.JndiJdbcReportDataSourceImpl"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.VirtualReportDataSource"
@@ -319,6 +336,8 @@
                     value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.impl.datasource.RepoJdbcDataSource"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AwsReportDataSource"
                     value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.impl.datasource.RepoAwsDataSource"/>
+                <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AzureSqlReportDataSource"
+                    value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.impl.datasource.RepoAzureSqlDataSource"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JndiJdbcReportDataSource"
                     value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.impl.datasource.RepoJndiJdbcDataSource"/>
                 <entry key="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.VirtualReportDataSource"
@@ -393,6 +412,11 @@
         <property name="lockFoldersOnPathChange" value="true"/>
         <property name="queryModificationEvaluator" ref="queryModificationEvaluator"/>
         <property name="hibernateSaveUpdateDeleteListener" ref="${bean.themeHibernateListener}"/>
+        <property name="millisSecondUnsupportedSchemaSet">
+            <set>
+                <value>mysql</value>
+            </set>
+        </property>
     </bean>
 
     <bean id="queryModificationEvaluator" class="com.jaspersoft.jasperserver.search.common.QueryModificationEvaluatorImpl"/>
@@ -427,7 +451,7 @@
     <bean id="baseResourceValidator" class="com.jaspersoft.jasperserver.api.metadata.common.service.impl.BaseResourceValidator"
             abstract="true">
         <property name="repositoryService">
-            <ref bean="${bean.internalRepositoryService}"/>
+            <ref bean="unsecureRepositoryService"/>
         </property>
     </bean>
 
@@ -487,6 +511,17 @@
             </set>
         </property>
     </bean>
+	<bean class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.DataSourceServiceDefinition">
+		<property name="dataSourceInterface"
+			value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.AzureSqlReportDataSource" />
+		<property name="serviceBeanName" value="azureSqlDataSourceServiceFactory" />
+		<property name="supportedQueryLanguages">
+			<set>
+				<value>sql</value>
+				<value>SQL</value>
+			</set>
+		</property>
+	</bean>
 	<bean class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.DataSourceServiceDefinition">
 		<property name="dataSourceInterface"
 			value="com.jaspersoft.jasperserver.api.metadata.jasperreports.domain.JndiJdbcReportDataSource" />
@@ -560,14 +595,22 @@
         <property name="pooledJdbcDataSourceFactory">
             <ref bean="dbcpJdbcDataSourceFactory"/>
         </property>
+        <property name="autoCommitUnsupportedDrivers">
+            <set>
+                <value>com.simba.cassandra.jdbc4.Driver</value>
+                <value>com.simba.impala.jdbc4.Driver</value>
+            </set>
+        </property>
+        <property name="driverAuthMethMap">
+            <map>
+                <entry key="com.simba.cassandra.jdbc4.Driver" value="1"/>
+                <entry key="com.simba.impala.jdbc4.Driver" value="3"/>
+            </map>
+        </property>
         <property name="poolTimeout" value="900"/>
     </bean>
 
-    <bean id="mongoDbJDBCReportDataSourceServiceFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.MongoDbJDBCReportDataSourceServiceFactory">
-        <property name="pooledJdbcDataSourceFactory">
-            <ref bean="dbcpJdbcDataSourceFactory"/>
-        </property>
-        <property name="poolTimeout" value="900"/>
+    <bean id="mongoDbJDBCReportDataSourceServiceFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.MongoDbJDBCReportDataSourceServiceFactory" parent="jdbcDataSourceServiceFactory">
         <property name="mongoDBJDBCSchemaDefinitionTimeoutInMinute" value="1440"/>
         <property name="schemaDefinitionDirectory" value="#{ systemProperties['java.io.tmpdir'] }"/>
         <property name="repositoryService">
@@ -575,16 +618,36 @@
         </property>
     </bean>
 
-
     <bean id="awsDataSourceServiceFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.AwsReportDataSourceServiceFactory"
           parent="jdbcDataSourceServiceFactory">
         <property name="awsDataSourceRecovery" ref="awsDataSourceRecovery"/>
+    </bean>
+
+    <bean id="azureSqlDataSourceServiceFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.azuresql.AzureSqlReportDataSourceServiceFactory"
+          parent="jdbcDataSourceServiceFactory">
+      <property name="azureProperties" ref="awsProperties"/>
+      <property name="messageSource" ref="messageSource"/>
+      <property name="defaultKeyStoreType" ref="defaultAzureKeyStoreType"/>
+      <property name="defaultJdbcDriverClassName" ref="defaultAzureJdbcDriverClassName"/>
+      <property name="repositoryService">
+        <ref bean="${bean.repositoryService}"/>
+      </property>
+      <property name="azureSqlManagementService" ref="azureSqlManagementService"/>
+    </bean>
+
+    <bean id="defaultAzureKeyStoreType" class="java.lang.String">
+      <constructor-arg value="pkcs12"/>
+    </bean>
+
+    <bean id="azureSqlManagementService" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.azuresql.AzureSqlManagementService">
+        <property name="defaultJdbcUrlSyntax" ref="defaultAzureJdbcUrlSyntax"/>
     </bean>
 
     <bean id="virtualDataSourceServiceFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.VirtualReportDataSourceServiceFactory"
             parent="jdbcDataSourceServiceFactory">
         <property name="virtualDataSourceHandler" ref="virtualDataSourceHandler"/>
         <property name="awsDataSourceServiceFactory" ref="awsDataSourceServiceFactory"/>
+        <property name="azureSqlDataSourceServiceFactory" ref="azureSqlDataSourceServiceFactory"/>
     </bean>
 
     <bean id="jndiFallbackResolver" class="com.jaspersoft.jasperserver.api.metadata.common.util.JndiFallbackResolver"/>
@@ -752,10 +815,13 @@
 	</bean>
 
 	<util:list id="reportExecutionListenerFactories">
+		<ref local="MDCReportExecutionListenerFactory"/>
 		<ref local="localeContextReportExecutionListenerFactory"/>
 		<ref local="securityContextReportExecutionListenerFactory"/>
 		<ref local="reportExecutionAuditListenerFactory"/>
 	</util:list>
+
+	<bean name="MDCReportExecutionListenerFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.MDCReportExecutionListenerFactory"/>
 
 	<bean name="localeContextReportExecutionListenerFactory" class="com.jaspersoft.jasperserver.api.engine.jasperreports.service.impl.LocaleContextReportExecutionListenerFactory"/>
 
@@ -812,8 +878,8 @@
             <list>
                 <!--Default Parameter Provider-->
                 <!--<bean class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.UserProfileBuiltInParameterProvider">-->
-                    <!--<property name="profileAttributeService" ref="profileAttributeService"/>-->
-                    <!--<property name="profileAttributeCategories" ref="${bean.profileAttributeCategories}"/>-->
+                <!--<property name="profileAttributeService" ref="profileAttributeService"/>-->
+                <!--<property name="profileAttributeCategories" ref="${bean.profileAttributeCategories}"/>-->
                 <!--</bean>-->
                 <bean class="com.jaspersoft.jasperserver.api.security.externalAuth.keycloak.KeycloakUserProfileBuiltInParameterProvider">
                     <property name="profileAttributeService" ref="profileAttributeService"/>
@@ -1037,6 +1103,12 @@
 
     <bean id="objectPermissionsRepositoryListener" class="com.jaspersoft.jasperserver.api.metadata.user.service.impl.ObjectPermissionsRepositoryListener">
         <property name="permissionsService" ref="${bean.objectPermissionServiceInternal}"/>
+        <property name="patternsToSkip">
+            <util:list value-type="java.lang.String" list-class="java.util.ArrayList">
+                <!-- individual theme resources don't have permissions assigned, skipping the check for performance reasons -->
+                <value>.*/themes/.*</value>
+            </util:list>
+        </property>
     </bean>
     
     <bean class="com.jaspersoft.jasperserver.api.metadata.common.service.ResourceEventListenerProcessor" lazy-init="false">
@@ -1109,6 +1181,7 @@
                 <entry key="net.sf.jasperreports.repo.RepositoryService">
                	    <list>
                         <ref bean="repoRepositoryService"/>
+                        <bean class="com.jaspersoft.jasperserver.api.engine.jasperreports.util.FtpRepositoryService"/>
                	    </list>
                 </entry>
                 <entry key="net.sf.jasperreports.web.WebLocaleResolver">
@@ -1275,6 +1348,59 @@
     <bean id="sessionDecoratorFilter" class="com.jaspersoft.jasperserver.war.util.SessionDecoratorFilter">
     </bean>
 
+    <bean id="csrfGuardFilter" class="com.jaspersoft.jasperserver.api.security.csrf.JSCsrfGuardFilter">
+        <description>Servlet delegating requests to CSRFGuardFilter based on User-Agent header</description>
+        <property name="protectedUserAgentRegexs">
+            <description>
+                A list of regular expressions for the User Agent's that are not protected against CSRF.
+                CSRF is an attack perpetrated via browsers.  This property is to whitelist non-browser User Agent's.
+                User-Agent is a request header normally set by a client (e.g. browser).
+
+                Each regex is matched against the ENTIRE user-agent header.  The match is case insensitive. If there is
+                a match, the request is not checked for the presence of a CSRF token in the req. header or parameters.
+
+                Make sure the regex expressions are valid and are not too permissive.  Having unprotectedUserAgentRegexs
+                set to .* opens up the server to CSRF.  It's paramount to turning CSRFGuard off.
+            </description>
+            <list>
+                <value>Mozilla/.*</value>
+                <value>Opera/.*</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="crossDomainFilter" class="com.jaspersoft.jasperserver.api.security.csrf.CrossDomainCommunicationFilter">
+        <description>
+            Controls cross domain communication based on the regex returned by the whitelistProvider#getWhitelistPattern.
+            If no profile attribs are returned, only requests from the same page domain as Jasper Server are allowed.
+        </description>
+        <property name="whitelistProvider">
+            <description>
+                Provides cross-domain communication white list regex based on the logged-in user/principal.
+                Server level attribs, if allowed, can be overwritten at tenant and user levels.
+            </description>
+            <bean class="com.jaspersoft.jasperserver.api.security.csrf.DomainWhitelistProviderImpl">
+                <description>
+                    Default implementation, which could be extended to provide external white lists.
+                </description>
+                <property name="profileAttributeService" ref="profileAttributeServiceTarget"/>
+                <property name="additionalWhitelistAttributes">
+                    <description>
+                        This property allows an unlimited number of white list attributes at server, organization, and
+                        user levels in addition to the default 'domainWhitelist' attribute.
+                        All these attribute values are combined into a regular expression, so be wary of creating too
+                        many white lists for the server or for any one org/user.  It's best to have a list at the server
+                        level to be overwritten by that at the org/user levels.
+                    </description>
+                    <list>
+                        <value>domainWhitelist1</value>
+                        <value>domainWhitelist2</value>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
     <!-- Make maxSize bigger if you are displaying dashboards with 10+ frames and you are getting image loading problems -->
     <bean id="jasperPrintAccessor" class="com.jaspersoft.jasperserver.war.util.LRUSessionObjectAccessor">
         <property name="listSessionName" value="jasperPrintSerie"/>
@@ -1311,6 +1437,7 @@
         <property name="urlParameterAnchor" value="anchor"/>
         <property name="dateFormatter" ref="hyperlinkDateParameterFormatter"/>
         <property name="encodingProvider" ref="encodingProvider"/>
+        <property name="dateFormatProvider" ref="isoCalendarFormatProvider"/>
     </bean>
 
     <bean id="reportExecutionHyperlinkProducer" class="com.jaspersoft.jasperserver.war.action.hyperlinks.ReportExecutionHyperlinkProducerFactory"
@@ -1396,7 +1523,7 @@
             <value><![CDATA[[\|&+*?\<\>/\\]]]></value>
         </property>
         <property name="tenantIdNotSupportedSymbols">
-            <value><![CDATA[[~!\+\-#\$%\^\|\s]]]></value>
+            <value><![CDATA[[~!\/\\\+\-#\$%\^\|\s]]]></value>
         </property>
         <property name="resourceIdNotSupportedSymbols">
             <value><![CDATA[[~!#\$%^|\s`@&*()\-+={}\[\]:;"'\<\>,?/\|\\]]]></value>
@@ -1424,6 +1551,13 @@
         <property name="defaultAddToDomainDependents" value="true"/>
         <property name="defaultDomainDependentsBlockAndUpdate" value="true"/>
         <property name="enableAccessibility" value="true"/>
+        <!-- max upload file size in bytes. -1 means no limit -->
+        <property name="maxFileSize" value="-1"/>
+
+        <!-- XML XXE vulnerability check bypass. When this value is 'true', JRS does not check for XXE. -->
+        <!-- Keep in mind that old versions of .jrtx with .dtd reference will NOT work when XXE check is enabled -->
+        <property name="skipXXECheck" value="true"/>
+
     </bean>
 
     <!-- report virtualizers -->
@@ -1754,6 +1888,7 @@
         <value>ap-southeast-1.amazonaws.com</value>
         <value>ap-southeast-2.amazonaws.com</value>
         <value>ap-northeast-1.amazonaws.com</value>
+        <value>ap-northeast-2.amazonaws.com</value>
         <value>sa-east-1.amazonaws.com</value>
     </util:list>
 

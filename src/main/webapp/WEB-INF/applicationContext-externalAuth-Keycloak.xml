@@ -85,6 +85,17 @@
 		<property name="userAuthorityService">
 			<ref bean="${bean.internalUserAuthorityService}" />
 		</property>
+		<property name="adminUsernames">
+			<list>
+				<value>super_admin_test</value>
+			</list>
+		</property>
+		<property name="defaultAdminRoles">
+			<list>
+				<value>ROLE_USER</value>
+				<value>ROLE_ADMINISTRATOR</value>
+			</list>
+		</property>
 		<property name="defaultInternalRoles">
 			<list>
 				<value>ROLE_USER</value>

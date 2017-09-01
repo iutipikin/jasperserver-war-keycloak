@@ -1,7 +1,7 @@
 package com.jaspersoft.jasperserver.api.security.externalAuth.wrappers.spring.keycloak;
 
-import java.util.Collection;
-
+import com.jaspersoft.jasperserver.api.JasperServerAPI;
+import com.jaspersoft.jasperserver.api.security.externalAuth.keycloak.KeycloakUserDetails;
 import org.keycloak.adapters.OidcKeycloakAccount;
 import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
@@ -11,8 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 
-import com.jaspersoft.jasperserver.api.JasperServerAPI;
-import com.jaspersoft.jasperserver.api.security.externalAuth.keycloak.KeycloakUserDetails;
+import java.util.Collection;
 
 /**
  * Jasper Server API for Keycloak authentication provider.

@@ -1,18 +1,18 @@
 package com.jaspersoft.jasperserver.api.security.externalAuth.filters.keycloak;
 
-import java.io.IOException;
+import com.jaspersoft.jasperserver.api.security.externalAuth.adapters.keycloak.JSKeycloakConfigResolver;
+import org.apache.commons.lang3.StringUtils;
+import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
+import org.springframework.web.util.CookieGenerator;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
-import org.springframework.web.util.CookieGenerator;
+import java.io.IOException;
 
 /**
  * Keycloak configuration resolver.<br/>
