@@ -3,6 +3,9 @@ package com.jaspersoft.jasperserver.api.security.externalAuth.keycloak;
 import com.jaspersoft.jasperserver.api.security.JrsAuthenticationSuccessHandler;
 import com.jaspersoft.jasperserver.api.security.externalAuth.ExternalDataSynchronizer;
 import com.jaspersoft.jasperserver.api.security.externalAuth.cas.JrsExternalCASAuthenticationSuccessHandler;
+import com.jaspersoft.jasperserver.api.security.externalAuth.utils.UrlSplitter;
+import org.apache.http.HttpHeaders;
+import org.apache.http.protocol.HTTP;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.keycloak.KeycloakPrincipal;
@@ -17,7 +20,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A replica of {@link JrsExternalCASAuthenticationSuccessHandler} to support
@@ -49,33 +57,46 @@ public class JrsExternalKeycloakAuthenticationSuccessHandler extends JrsAuthenti
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 this.externalDataSynchronizer.synchronize();
             }
-            //Locale from Keycloak server WIP
+            //Locale from Keycloak server/Keycloak default login page
             Cookie[] cookies = request.getCookies();
             boolean hasCookie = false;
-            String locale = ((KeycloakPrincipal) authentication.getPrincipal()).getKeycloakSecurityContext().getIdToken().getLocale();
+            String storedLocale = ((KeycloakPrincipal) authentication.getPrincipal()).getKeycloakSecurityContext().getIdToken().getLocale();
+            String referrer = request.getHeader(HttpHeaders.REFERER);
+            String kc_locale = UrlSplitter.splitQuery(new URL(referrer)).get("kc_locale").get(0);
+            String finalClientLocale;
+
             if (logger.isDebugEnabled()) {
-                Enumeration<String> headerNames = request.getHeaderNames();
+                Enumeration headerNames = request.getHeaderNames();
+                Map<String, List<String>> referrerParams = UrlSplitter.splitQuery(new URL(referrer));
+                referrerParams.forEach((param, value) -> {
+                    logger.debug(String.format("Referrer param: %s, value: %s", param, value.get(0)));
+                });
                 if (headerNames != null) {
                     while (headerNames.hasMoreElements()) {
-                        logger.debug("Input Header: " + request.getHeader(headerNames.nextElement()));
+                        String header = (String) headerNames.nextElement();
+                        logger.debug(String.format("Header: %s, %s", header, request.getHeader(header)));
                     }
                 }
-                logger.debug("Current user Locale is: " + locale);
-                logger.debug("Current user ClaimsLocales: " + ((KeycloakPrincipal) authentication
-                        .getPrincipal())
-                        .getKeycloakSecurityContext()
-                        .getIdToken().getClaimsLocales());
+                logger.debug(String.format("Current user profile locale: %s", storedLocale));
+                logger.debug(String.format("Current user Keycloak Login page locale: %s", kc_locale));
             }
+
+            if (!storedLocale.equals(kc_locale)){
+                finalClientLocale = kc_locale;
+            } else {
+                finalClientLocale = storedLocale;
+            }
+            logger.debug(String.format("Final user locale: %s", finalClientLocale));
             for (Cookie cookie : cookies) {
                 if ("userLocale".equals(cookie.getName())) {
-                    cookie.setValue(locale);
+                    cookie.setValue(finalClientLocale);
                     response.addCookie(cookie);
                     hasCookie = true;
                     break;
                 }
             }
             if (!hasCookie) {
-                Cookie localeCookie = new Cookie("userLocale", locale);
+                Cookie localeCookie = new Cookie("userLocale", finalClientLocale);
                 localeCookie.setPath(request.getContextPath());
                 response.addCookie(localeCookie);
             }
