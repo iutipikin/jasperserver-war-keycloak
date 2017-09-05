@@ -33,7 +33,7 @@ public class KeycloakSessionLocaleResolver implements LocaleResolver {
                 locale = request.getLocale();
             }
         }
-        logger.debug(String.format("RESOLVE LOCALE FIRED: %s", locale));
+        logger.debug(String.format("Resolved Locale: %s", locale));
         return locale;
     }
 
@@ -43,7 +43,7 @@ public class KeycloakSessionLocaleResolver implements LocaleResolver {
             for (Cookie cookie : cookies) {
                 if (cookie.getName().equals(USER_LOCALE_SESSION_ATTR)) {
                     if (cookie.getValue() != null && cookie.getValue().length() > 0) {
-                        logger.debug(String.format("GET LOCALE FROM COOKIE FIRED: %s", cookie.getValue()));
+                        logger.debug(String.format("Cookie Locale: %s", cookie.getValue()));
                         return LocaleUtils.toLocale(cookie.getValue());
                     }
                     break;
@@ -54,7 +54,6 @@ public class KeycloakSessionLocaleResolver implements LocaleResolver {
     }
 
     public void setLocale(HttpServletRequest request, HttpServletResponse response, Locale locale) {
-        logger.debug(String.format("SET LOCALE ATTR FIRED: %s", locale.toString()));
         request.getSession().setAttribute(USER_LOCALE_SESSION_ATTR, locale);
     }
 }

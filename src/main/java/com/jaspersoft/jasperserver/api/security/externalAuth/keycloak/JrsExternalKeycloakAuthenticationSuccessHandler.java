@@ -60,7 +60,7 @@ public class JrsExternalKeycloakAuthenticationSuccessHandler extends JrsAuthenti
             String storedLocale = ((KeycloakPrincipal) authentication.getPrincipal()).getKeycloakSecurityContext().getIdToken().getLocale();
             String referrer = request.getHeader(HttpHeaders.REFERER);
             String kc_locale = null;
-            if (referrer != null){
+            if (referrer != null) {
                 if (referrer.length() > 0)
                     try {
                         if (UrlSplitter.splitQuery(new URL(referrer)).get("kc_locale") != null) {
@@ -68,9 +68,8 @@ public class JrsExternalKeycloakAuthenticationSuccessHandler extends JrsAuthenti
                             Map<String, List<String>> referrerParams = UrlSplitter.splitQuery(new URL(referrer));
                             referrerParams.forEach((param, value) -> logger.debug(String.format("Referrer param: %s, value: %s", param, value.get(0))));
                         }
-                    } catch (Exception e){
-                        logger.debug("URI splitter failed");
-                        logger.debug(e);
+                    } catch (Exception e) {
+                        logger.error(e);
                     }
             }
             String finalClientLocale;
@@ -86,38 +85,19 @@ public class JrsExternalKeycloakAuthenticationSuccessHandler extends JrsAuthenti
                 logger.debug(String.format("Current user Keycloak Login page locale: %s", kc_locale));
             }
 
-            if (!storedLocale.equals(kc_locale) && kc_locale != null){
+            if (!storedLocale.equals(kc_locale) && kc_locale != null) {
                 finalClientLocale = kc_locale;
             } else {
                 finalClientLocale = storedLocale;
             }
             logger.debug(String.format("Final user locale: %s", finalClientLocale));
             try {
-//                for (Cookie cookie : cookies) {
-//                    if ("userLocale".equals(cookie.getName())) {
-//                        cookie.setMaxAge(0);
-//                        response.addCookie(cookie);
-////                    hasCookie = true;
-//                        break;
-//                    }
-//                }
-//                if (!hasCookie) {
-//                Cookie localeCookie = new Cookie("userLocale", finalClientLocale);
-                Cookie localeCookie = new Cookie("myNewUserLocale", finalClientLocale);
-                localeCookie.setPath(request.getContextPath());
+                Cookie localeCookie = new Cookie("userLocale", finalClientLocale);
+                localeCookie.setPath(request.getContextPath() + "/");
                 response.addCookie(localeCookie);
-                Cookie localeCookie2 = new Cookie("userLocale", finalClientLocale);
-                localeCookie2.setPath("/jasperserver/");
-                response.addCookie(localeCookie2);
-//            }
-//                request.getSession().removeAttribute("userLocale");
-//                request.getSession().setAttribute("userLocale", finalClientLocale);
-//                request.getSession().setAttribute("random_", "shit1");
-//                request.getSession().setAttribute("random_2", "shit2");
-            } catch (Exception e){
-                logger.debug(e);
+            } catch (Exception e) {
+                logger.error(e);
             }
-//            response.setLocale(new Locale(finalClientLocale));
             super.onAuthenticationSuccess(request, response, authentication);
         } catch (RuntimeException exception) {
             SecurityContextHolder.getContext().setAuthentication(null);
