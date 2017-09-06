@@ -25,6 +25,8 @@
 
     <Resource name="jdbc/postgres" auth="Container" type="javax.sql.DataSource" maxActive="40" maxIdle="30" maxWait="10000" username="postgres" password="postgres" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://127.0.0.1:5433/vdk?defaultReadOnly=false"/>
 
+    <!--<Resource name="jdbc/postgres" auth="Container" type="javax.sql.DataSource" maxActive="40" maxIdle="30" maxWait="10000" username="vdk" password="cjU29L&amp;x" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://10.0.0.11:5432/vdk?defaultReadOnly=false"/>-->
+
     <!-- Comment this line to enable session persistence across Tomcat restarts -->
     <Manager pathname=""/>
 </Context>
